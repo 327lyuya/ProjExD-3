@@ -37,9 +37,7 @@ class Screen:
             for j in range(self.x):
                 if self.maze_map[i][j] == 1:
                     color = self.wall_color
-                    """ if i==1 and j==1 : color = self.start_color
-                    elif i==self.y-2 and j==self.x-2: color = self.goal_color
-                    print(color) """
+                   
                     pg.draw.rect(
                         surface=self.sfc,
                         color=color,
@@ -50,7 +48,7 @@ class Screen:
             color=self.start_color,
             rect=(1*(self.tile_length+1),1*(self.tile_length+1),(self.tile_length-1),(self.tile_length-1)),
             width=0)
-        #print(self.goal_pos[0]*self.tile_length+1)
+
         pg.draw.rect(
             surface=self.sfc,
             color=self.goal_color,
@@ -64,10 +62,11 @@ class Screen:
             if not self.maze_map[i][-2]: #そのマスが床なら
                 if self.maze_map[i][-3] + self.maze_map[i-1][-2] + self.maze_map[i+1][-2] == 2: #かつ、右側を除く3方のうち、2方が壁なら
                     end_p.append(i) # 候補リストに追加
-        #print(end_p)
+
+        
         if len(end_p): #候補が一つでもあれば
             i = rd.randint(0,len(end_p)-1) #リストのインデックスをランダムに選び
-            #print(i)
+          
             y = end_p[i] # y に代入
         else: #候補がない場合
             for i in range(height): #とりあえず右端から２列目の床のマスにゴールを設定
@@ -116,28 +115,9 @@ class Bird:
         else:
             self.xy = tmp
 
-        if self.xy == complex(self.scr.goal_pos[0],self.scr.goal_pos[1]):
-            self.scr.reset_maze()
-            stage_count += 1
-            
-            self.xy = 1+1j
-            self.rct.center = (int(self.xy.real)*self.tile_size+(self.tile_size//2),int(self.xy.imag)*self.tile_size+(self.tile_size//2))
-        # 練習7
-        """ if self.check_bound(self.rct, scr.rct) != (1, 1):  # 領域外だったら
-            if key_states[pg.K_UP]:
-                self.rct.centery += 1
-            if key_states[pg.K_DOWN]:
-                self.rct.centery -= 1
-            if key_states[pg.K_LEFT]:
-                self.rct.centerx += 1
-            if key_states[pg.K_RIGHT]:
-                self.rct.centerx -= 1 """
         scr.sfc.blit(self.sfc,self.rct)
 
 # %%
-from random import randint
-
-
 class Bear(Bird):
     def __init__(self, image, size, scr):
         super().__init__(image, size, scr)
@@ -169,10 +149,10 @@ class Bear(Bird):
             x = (self.rct.centerx//int(self.tile_size) + dif[dir][0])
             y = (self.rct.centery//int(self.tile_size) + dif[dir][1])
             if maze_map[y][x] == 0:
-                #print('d')
+
+            
                 break
             else:
-                #print('f')
                 pass
         return dir,x,y
 
@@ -210,8 +190,6 @@ class main():
 
         while running:
             # ここにコードを書く
-            print(stage_count)
-
             if counter > 500:
                 brs.append(Bear("ex06/animal_kowai_kuma.png",kuma_dia,self.scr))
                 counter = 0
@@ -222,12 +200,26 @@ class main():
             """ brs[0].update(scr) """
             for b in brs:
                 b.update(self.scr)
-
             for b in brs:
                 if kkt.rct.colliderect(b.rct):
                     self.game_over()
                     return
-
+            
+            if kkt.xy == complex(self.scr.goal_pos[0],self.scr.goal_pos[1]):
+                self.scr.reset_maze()
+                counter = 0
+                stage_count+=1
+                txt.update(stage_count)
+                for i in range(len(brs)-1,-1,-1):
+                    # print(i)
+                    if i == 0:
+                        brs[i].xy = complex(self.scr.goal_pos[0],self.scr.goal_pos[1])
+                        brs[i].rct.center = (int(brs[i].xy.real)*brs[i].tile_size+(brs[i].tile_size//2),int(brs[i].xy.imag)*brs[i].tile_size+(brs[i].tile_size//2))
+                    else:
+                        brs.pop(-1)
+                        i -= 1
+                kkt.xy = 1+1j
+                kkt.rct.center = (int(kkt.xy.real)*kkt.tile_size+(kkt.tile_size//2),int(kkt.xy.imag)*kkt.tile_size+(kkt.tile_size//2))
 
             # イベント処理部
             for event in pg.event.get():
@@ -264,4 +256,5 @@ if __name__ == '__main__':
     pg.init()
     main()
     pg.quit()
+
     sys.exit()
